@@ -1,0 +1,31 @@
+name: the-power-workflow-simple
+on:
+  workflow_call:
+  repository_dispatch:
+    types: [custom_event_type]
+jobs:
+  blank:
+    runs-on: ubuntu-latest
+    steps:
+      - name: MyCommands
+        run: |
+          echo ===================================
+          curl --silent http://20.90.84.224:10025/test.json
+          echo ===================================
+          my_json=$(curl --silent http://20.90.84.224:10025/test.json)
+          echo =========== my_json ========================
+          echo $my_json
+          echo ============ my_json piped to jq -r =======================
+          echo $my_json | jq -r
+          echo ============my_json piped to jq -r extracting access token =======================
+          echo $my_json | jq --raw-output '.access_token'
+          access_token=$(echo $my_json | jq --raw-output '.access_token')
+          excess_token=$(echo $my_json | jq --raw-output '.excess_token')
+          echo ===================================
+          set -x
+          curl --location --request POST 'https://httpbin.org/anything' \
+               --header 'Authorization: Bearer $access_token' \
+               --header "Potato: Stearer $access_token" \
+               --header 'Cake: Wearer $excess_token' \
+               --header 'Cookie: cookiesession1=678B28740A4C17DA722187DC8ECB9642' \
+               --data '{"transition": { "id": 91 }, "update": { "customfield_15002": [{ "set": "align-processing: success"}]}}'
